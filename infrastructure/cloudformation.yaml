@@ -598,40 +598,9 @@ Resources:
           TargetGroupArn: !Ref ALBTargetGroup
 
   # ===================== SES =====================
-  SESEmailIdentity:
-    Type: AWS::SES::EmailIdentity
-    Properties:
-      EmailIdentity: !Ref DomainName
-
-  SESDKIMRecord1:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref HostedZoneId
-      Name: !GetAtt SESEmailIdentity.DkimDNSTokenName1
-      Type: CNAME
-      TTL: 300
-      ResourceRecords:
-        - !GetAtt SESEmailIdentity.DkimDNSTokenValue1
-
-  SESDKIMRecord2:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref HostedZoneId
-      Name: !GetAtt SESEmailIdentity.DkimDNSTokenName2
-      Type: CNAME
-      TTL: 300
-      ResourceRecords:
-        - !GetAtt SESEmailIdentity.DkimDNSTokenValue2
-
-  SESDKIMRecord3:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref HostedZoneId
-      Name: !GetAtt SESEmailIdentity.DkimDNSTokenName3
-      Type: CNAME
-      TTL: 300
-      ResourceRecords:
-        - !GetAtt SESEmailIdentity.DkimDNSTokenValue3
+  # SES EmailIdentity and DKIM records are managed outside CloudFormation
+  # (already configured manually for juanvelasco100.click).
+  # The ECS Task Role has IAM permissions to use SES.
 
   # ===================== SNS =====================
   SNSTopic:
