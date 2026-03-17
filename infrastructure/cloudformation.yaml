@@ -4,7 +4,7 @@ Description: BTG Pactual Funds Management Platform - Final Infrastructure BTG
 Parameters:
   EnvironmentName:
     Type: String
-    Default: btg-funds
+    Default: dev
     Description: Prefix for all resource names
   DomainName:
     Type: String
@@ -15,7 +15,7 @@ Parameters:
   ContainerImage:
     Type: String
     Default: public.ecr.aws/nginx/nginx:alpine
-    Description: Docker image URI (update when Spring Boot app is ready)
+    Description: Docker image URI
   ContainerPort:
     Type: Number
     Default: 8080
@@ -525,7 +525,7 @@ Resources:
     UpdateReplacePolicy: Delete
     Properties:
       LogGroupName: !Sub /ecs/${EnvironmentName}
-      RetentionInDays: 30
+      RetentionInDays: 7
 
   ECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -597,10 +597,7 @@ Resources:
           ContainerPort: !Ref ContainerPort
           TargetGroupArn: !Ref ALBTargetGroup
 
-  # ===================== SES =====================
-  # SES EmailIdentity and DKIM records are managed outside CloudFormation
-  # (already configured manually for juanvelasco100.click).
-  # The ECS Task Role has IAM permissions to use SES.
+
 
   # ===================== SNS =====================
   SNSTopic:
@@ -637,7 +634,7 @@ Outputs:
     Value: !GetAtt ApplicationLoadBalancer.DNSName
 
   ECRRepositoryUri:
-    Description: ECR repository URI (push Docker images here)
+    Description: ECR repository URI
     Value: !GetAtt ECRRepository.RepositoryUri
 
   ECSClusterName:
