@@ -2,7 +2,7 @@
 
 AWS infrastructure for the BTG Pactual funds management API. Deploys via CloudFormation and manages the full lifecycle through GitHub Actions.
 
-## Architecture
+## Architecture:
 
 ```
 Internet
