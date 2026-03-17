@@ -25,11 +25,11 @@ Parameters:
     Description: Number of ECS tasks (set 0 until app is deployed)
   TaskCpu:
     Type: String
-    Default: '256'
+    Default: '512'
     AllowedValues: ['256', '512', '1024', '2048', '4096']
   TaskMemory:
     Type: String
-    Default: '512'
+    Default: '1024'
     AllowedValues: ['512', '1024', '2048', '4096', '8192']
 
 Resources:
@@ -384,9 +384,9 @@ Resources:
       TargetType: ip
       HealthCheckPath: /actuator/health
       HealthCheckIntervalSeconds: 30
-      HealthCheckTimeoutSeconds: 5
+      HealthCheckTimeoutSeconds: 10
       HealthyThresholdCount: 2
-      UnhealthyThresholdCount: 3
+      UnhealthyThresholdCount: 5
       Matcher:
         HttpCode: '200'
 
