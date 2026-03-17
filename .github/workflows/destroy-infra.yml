@@ -21,7 +21,7 @@ on:
 env:
   AWS_REGION: ${{ github.event.inputs.region || 'us-east-1' }}
   STACK_NAME: btg-funds-platform
-  ENVIRONMENT_NAME: btg-funds
+  ENVIRONMENT_NAME: dev
 
 jobs:
   destroy-via-pr:
