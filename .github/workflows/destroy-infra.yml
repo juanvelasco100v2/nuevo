@@ -1,0 +1,113 @@
+name: Destroy Infrastructure
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+      - dev
+    paths:
+      - 'infrastructure/DESTROY'
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'AWS Region'
+        required: true
+        default: 'us-east-1'
+      confirm:
+        description: 'Type DELETE to confirm destruction'
+        required: true
+
+env:
+  AWS_REGION: ${{ github.event.inputs.region || 'us-east-1' }}
+  STACK_NAME: btg-funds-platform
+  ENVIRONMENT_NAME: btg-funds
+
+jobs:
+  destroy-via-pr:
+    name: Destroy Stack (via merge)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Clean ECR repository
+        continue-on-error: true
+        run: |
+          REPO_NAME="${{ env.ENVIRONMENT_NAME }}-api"
+          echo "Cleaning images from ECR repository: $REPO_NAME"
+          IMAGES=$(aws ecr list-images \
+            --repository-name "$REPO_NAME" \
+            --query 'imageIds[*]' \
+            --output json 2>/dev/null)
+          if [ "$IMAGES" != "[]" ] && [ -n "$IMAGES" ]; then
+            aws ecr batch-delete-image \
+              --repository-name "$REPO_NAME" \
+              --image-ids "$IMAGES"
+            echo "ECR images deleted"
+          else
+            echo "No images to delete"
+          fi
+
+      - name: Delete CloudFormation stack
+        run: |
+          echo "Deleting stack: ${{ env.STACK_NAME }}"
+          aws cloudformation delete-stack \
+            --stack-name ${{ env.STACK_NAME }}
+
+      - name: Wait for stack deletion
+        run: |
+          echo "Waiting for stack deletion to complete..."
+          aws cloudformation wait stack-delete-complete \
+            --stack-name ${{ env.STACK_NAME }}
+          echo "Stack deleted successfully"
+
+  destroy-manual:
+    name: Destroy Stack (manual)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.confirm == 'DELETE'
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Clean ECR repository
+        continue-on-error: true
+        run: |
+          REPO_NAME="${{ env.ENVIRONMENT_NAME }}-api"
+          echo "Cleaning images from ECR repository: $REPO_NAME"
+          IMAGES=$(aws ecr list-images \
+            --repository-name "$REPO_NAME" \
+            --query 'imageIds[*]' \
+            --output json 2>/dev/null)
+          if [ "$IMAGES" != "[]" ] && [ -n "$IMAGES" ]; then
+            aws ecr batch-delete-image \
+              --repository-name "$REPO_NAME" \
+              --image-ids "$IMAGES"
+            echo "ECR images deleted"
+          else
+            echo "No images to delete"
+          fi
+
+      - name: Delete CloudFormation stack
+        run: |
+          echo "Deleting stack: ${{ env.STACK_NAME }}"
+          aws cloudformation delete-stack \
+            --stack-name ${{ env.STACK_NAME }}
+
+      - name: Wait for stack deletion
+        run: |
+          echo "Waiting for stack deletion to complete..."
+          aws cloudformation wait stack-delete-complete \
+            --stack-name ${{ env.STACK_NAME }}
+          echo "Stack deleted successfully"
