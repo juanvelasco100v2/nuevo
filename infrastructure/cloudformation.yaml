@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: BTG Pactual Funds Management Platform - Complete Infrastructure test2
+Description: BTG Pactual Funds Management Platform - Complete Infrastructure test3
 
 Parameters:
   EnvironmentName:
