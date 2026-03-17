@@ -27,6 +27,7 @@ jobs:
   destroy-via-pr:
     name: Destroy Stack (via merge)
     runs-on: ubuntu-latest
+    environment: dev
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
 
     steps:
@@ -71,6 +72,7 @@ jobs:
   destroy-manual:
     name: Destroy Stack (manual)
     runs-on: ubuntu-latest
+    environment: dev
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.confirm == 'DELETE'
 
     steps:
