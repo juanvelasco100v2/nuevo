@@ -7,7 +7,7 @@ on:
       - main
       - dev
     paths:
-      - '../../DESTROY'
+      - 'infrastructure/DESTROY'
   workflow_dispatch:
     inputs:
       region:
