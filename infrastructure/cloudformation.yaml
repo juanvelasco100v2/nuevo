@@ -500,7 +500,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - sns:Publish
-                Resource: !Ref SNSTopic
+                Resource: '*'
         - PolicyName: SecretsReadAccess
           PolicyDocument:
             Version: '2012-10-17'
