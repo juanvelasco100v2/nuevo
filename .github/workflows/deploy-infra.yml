@@ -1,0 +1,64 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - 'infrastructure/**'
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'AWS Region'
+        required: true
+        default: 'us-east-1'
+
+env:
+  AWS_REGION: ${{ github.event.inputs.region || 'us-east-1' }}
+  STACK_NAME: btg-funds-platform
+  ENVIRONMENT_NAME: dev
+
+jobs:
+  deploy:
+    name: Deploy CloudFormation Stack
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate CloudFormation template
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://infrastructure/cloudformation.yaml
+
+      - name: Deploy CloudFormation stack
+        run: |
+          aws cloudformation deploy \
+            --template-file infrastructure/cloudformation.yaml \
+            --stack-name ${{ env.STACK_NAME }} \
+            --parameter-overrides \
+              EnvironmentName=${{ env.ENVIRONMENT_NAME }} \
+              HostedZoneId=${{ secrets.HOSTED_ZONE_ID }} \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset \
+            --tags \
+              Project=btg-funds \
+              ManagedBy=cloudformation \
+              Branch=${{ github.ref_name }}
+
+      - name: Show stack outputs
+        run: |
+          aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }} \
+            --query 'Stacks[0].Outputs' \
+            --output table
